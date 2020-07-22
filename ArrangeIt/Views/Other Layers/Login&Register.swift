@@ -19,6 +19,9 @@ class LoginAndRegisterViewController: UIViewController {
                 switchButton.setTitle("Войти", for: .normal)
             }
             else {
+                //Тут я проверяю бд ПОЖАЛУЙСТА НЕ УДАЛЯТЬ 
+                //let newEvent = Event(id: "4", name: "Обмен одеждой", eventBeginDate: Date(), eventEndDate: Date().addingTimeInterval(360), place: (54.4, 34.4), owner: "3", willGoUsers: ["3"], invitedUsers: [])
+                //newEvent.save()
                 titleLabel.text = "Вход"
                 nameField.isHidden = true
                 accountLabel.text = "Присоединиться"
@@ -63,7 +66,7 @@ class LoginAndRegisterViewController: UIViewController {
                     (result, error) in
                     if error == nil {
                         if let result = result {
-                            let _: DocumentReference? = FirebaseDB.shared.db.collection("users").addDocument(data: [
+                            let _: DocumentReference? = fireBase.collection("users").addDocument(data: [
                                 "id": result.user.uid,
                                 "name" : name,
                                 "email" : email,

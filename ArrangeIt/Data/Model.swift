@@ -12,6 +12,8 @@ typealias UserID = String
 typealias EventID = String
 typealias PathToImage = String
 
+let fireBase = Firestore.firestore()
+
 
 let testEventsList = ["1": Event(id: "1", name: "Футбол во дворе", eventBeginDate: Date().addingTimeInterval(60), eventEndDate: Date().addingTimeInterval(3660), place: (55.773863, 37.679636), owner: "1", willGoUsers: ["1", "2", "3"], invitedUsers: []), "2": Event(id: "2", name: "Покер", eventBeginDate: Date().addingTimeInterval(3600), eventEndDate: Date().addingTimeInterval(7200), place: (55.810127, 37.652739), owner: "1", willGoUsers: ["1", "2", "3", "4", "5", "6"], invitedUsers: ["7", "8", "9"]), "3": Event(id: "3", name: "Встреча одноклассников", eventBeginDate: Date().addingTimeInterval(10000), eventEndDate: Date().addingTimeInterval(15000), place: (55.794207, 37.582787), owner: "1", willGoUsers: ["1", "2", "3", "4"], invitedUsers: ["5", "6"])]
 
@@ -68,6 +70,23 @@ struct Event {
     
     var willGoUsers: [UserID]
     var invitedUsers: [UserID]
+    
+    func save(){
+        fireBase.collection("events").document("testEvent").setData([
+            "name": self.name,
+            "description": self.description ?? " ",
+            "eventBeginDate" : Timestamp( date : self.creatingDate ?? Date()),
+            "eventEndDate" : Timestamp( date : self.eventEndDate),
+            "cover": self.cover ?? " ",
+            "imageGallery" : self.imageGallery ?? [""]
+        ]) { err in
+            if let err = err {
+                print("Error writing document: \(err)")
+            } else {
+                print("Document successfully written!")
+            }
+        }
+    }
 }
 
 // Singleton!
@@ -142,15 +161,6 @@ struct InternalStorage {
     
 }
 
-// Singleton!
-struct FirebaseDB {
-    static var shared: FirebaseDB {
-        let instance = FirebaseDB()
-        return instance
-    }
-    
-    let db = Firestore.firestore()
-}
 
 // Singleton!
 struct NetworkPusher {
@@ -159,31 +169,7 @@ struct NetworkPusher {
         return instance
     }
     
-    func sendNewEvent(event: Event) {
-        let defaultData = "20.1.2020"
-        var _: DocumentReference? = FirebaseDB.shared.db.collection("events").addDocument(data: [
-            "id": event.id,
-            "name" : event.name,
-            "eventBeginDate" : event.eventBeginDate,
-            "eventEndDate" : event.eventEndDate,
-            "place" : event.place,
-            "creatingDate" : event.creatingDate ?? defaultData,
-            "owner" : event.owner,
-            "description" : event.description ?? "",
-            "cover" : event.cover ?? "",
-            "imageGallery" : event.imageGallery ?? "",
-            "willGoUsers" : event.willGoUsers,
-            "invitedUsers" : event.invitedUsers,
-        ]) {
-            mayError in
-            if let error = mayError {
-                print("error sending event. error: \(error) name: \(event.name), id: \(event.id)")
-            } else {
-                print("succesfully sent event. name: \(event.name), id: \(event.id)")
-                InternalStorage.shared.cachedEvents[event.id] =  event
-            }
-        }
-    }
+    
     
     func sendUpdateToEvent(ID eventID: EventID, newData: Event) {
         // TODO
